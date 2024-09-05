@@ -10,15 +10,15 @@ resource "aws_eks_addon" "vpc_cni" {
   }
 }
 
-# resource "aws_eks_addon" "core_dns" {
-#   cluster_name = var.cluster_name
-#   addon_name   = "coredns"
-#   #addon_version = var.core_dns_version
+resource "aws_eks_addon" "core_dns" {
+  cluster_name = var.cluster_name
+  addon_name   = "coredns"
+  #addon_version = var.core_dns_version
 
-#   tags = {
-#     Name = "core-dns-addon"
-#   }
-# }
+  tags = {
+    Name = "core-dns-addon"
+  }
+}
 
 resource "aws_eks_addon" "kube_proxy" {
   cluster_name = var.cluster_name
