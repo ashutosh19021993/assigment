@@ -1,6 +1,6 @@
 # modules/eks_node_group/main.tf
 
-resource "aws_iam_role" "this" {
+resource "aws_iam_role" "eks_node_role" {
   name = "${var.cluster_name}-node-role"
 
   assume_role_policy = jsonencode({
@@ -16,17 +16,29 @@ resource "aws_iam_role" "this" {
     ]
   })
 
-  managed_policy_arns = [
-    "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
-    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-    "arn:aws:iam::aws:policy/AmazonEC2ContainerServiceforEC2Role",
-  ]
+}
+
+resource "aws_iam_role_policy_attachment" "eks_worker_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  role       = aws_iam_role.eks_node_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_container_registry_read_only" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  role       = aws_iam_role.eks_node_role.name
+}
+
+# The following policy is generally not attached to EKS node roles; 
+# it is usually attached to the EKS cluster role instead.
+resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.eks_node_role.name
 }
 
 resource "aws_eks_node_group" "this" {
   cluster_name    = var.cluster_name
   node_group_name = var.node_group_name
-  node_role_arn   = aws_iam_role.this.arn
+  node_role_arn   = aws_iam_role.eks_node_role.arn
   subnet_ids      = var.subnet_ids
 
   scaling_config {
@@ -42,7 +54,6 @@ resource "aws_eks_node_group" "this" {
   }
 
 }
-
 output "node_role_arn" {
-  value = aws_iam_role.this.arn
+  value = aws_iam_role.eks_node_role.arn
 }

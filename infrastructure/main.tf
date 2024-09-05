@@ -5,15 +5,23 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.41.0"
     }
-
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.1.1"
+    }
+    external = {
+      source  = "hashicorp/external"
+      version = "~> 2.2.2"
+    }
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "2.24.0"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.6.0"
+      version = "~> 2.9.0"
     }
+
   }
 
 }
@@ -21,7 +29,11 @@ terraform {
 provider "aws" {
   region = "ap-northeast-3"
 }
-
+provider "helm" {
+  kubernetes {
+    config_path = "~/.kube/config" # Adjust if necessary
+  }
+}
 module "vpc" {
   source          = "./modules/vpc"
   name            = "eks-vpc"
@@ -43,7 +55,7 @@ module "eks_node_group" {
   source          = "./modules/eks_node_group"
   cluster_name    = module.cluster.cluster_name
   node_group_name = "worker-group"
-  node_role_arn   = aws_iam_role.eks_node_role.arn
+  node_role_arn   = module.eks_node_group.node_role_arn
   subnet_ids      = module.vpc.private_subnets
   desired_size    = 2
   max_size        = 3
@@ -63,54 +75,9 @@ module "eks_addons" {
 }
 
 
-resource "aws_iam_role" "eks_cluster_role" {
-  name = "eks-cluster-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = "sts:AssumeRole",
-        Effect = "Allow",
-        Principal = {
-          Service = "eks.amazonaws.com"
-        }
-      },
-    ]
-  })
-
-  managed_policy_arns = [
-    "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
-    "arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
-  ]
-}
-
-resource "aws_iam_role" "eks_node_role" {
-  name = "eks-node-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = "sts:AssumeRole",
-        Effect = "Allow",
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      },
-    ]
-  })
-
-  managed_policy_arns = [
-    "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
-    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-    "arn:aws:iam::aws:policy/AmazonEC2ContainerServiceforEC2Role",
-  ]
-}
-
 module "ingress" {
   source     = "./modules/ingress"
-  depends_on = [module.cluster]
+  depends_on = [module.cluster, module.eks_node_group]
 }
 
 module "java-app" {
@@ -121,6 +88,9 @@ output "cluster_endpoint" {
   value = module.cluster.cluster_endpoint
 }
 
+output "eks_node_group_role_arn" {
+  value = module.eks_node_group.node_role_arn
+}
 
 output "cluster_name" {
   value = module.cluster.cluster_name

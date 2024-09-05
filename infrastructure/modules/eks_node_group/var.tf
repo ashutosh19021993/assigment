@@ -39,3 +39,8 @@ variable "instance_types" {
   description = "List of instance types for the node group"
   type        = list(string)
 }
+
+# variable "node_role_arn" {
+#   description = "The ARN of the IAM role for the node group."
+#   type        = string
+# }
