@@ -5,14 +5,7 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.41.0"
     }
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.1.1"
-    }
-    external = {
-      source  = "hashicorp/external"
-      version = "~> 2.2.2"
-    }
+ 
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "2.24.0"
@@ -21,9 +14,7 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 2.9.0"
     }
-
   }
-
 }
 
 provider "aws" {
