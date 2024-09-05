@@ -2,7 +2,8 @@
 
 variable "name" {
   description = "Name of the VPC"
-  type        = "eks-infa-vpc"
+  type        = string
+  default     = "eks-vpc-infra"
 }
 
 variable "cidr_block" {

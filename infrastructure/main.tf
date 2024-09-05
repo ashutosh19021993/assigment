@@ -5,7 +5,14 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.41.0"
     }
- 
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.1.1"
+    }
+    external = {
+      source  = "hashicorp/external"
+      version = "~> 2.2.2"
+    }
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "2.24.0"
@@ -14,17 +21,9 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 2.9.0"
     }
-  }
-<<<<<<< HEAD
-   backend "s3" {
-      bucket                  = "terraform-infra"
-      key                     = "eks/terraform.tfstate"
-      region                  = "ap-northeast-3"
-      shared_credentials_file = "~/.aws/credentials"
-    }
 
-=======
->>>>>>> 4fa7f04f4d63695b8807ec0c420549181ed3c0bd
+  }
+
 }
 
 provider "aws" {

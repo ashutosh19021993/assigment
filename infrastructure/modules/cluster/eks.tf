@@ -11,7 +11,10 @@ resource "aws_iam_role" "this" {
         Action = "sts:AssumeRole",
         Effect = "Allow",
         Principal = {
-          Service = "eks.amazonaws.com"
+          Service = [
+            "eks-fargate-pods.amazonaws.com",
+            "eks.amazonaws.com",
+          ]
         }
       }
     ]
@@ -20,6 +23,9 @@ resource "aws_iam_role" "this" {
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
     "arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly", # For accessing ECR images
+    "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",          # Essential for EKS worker nodes
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerServiceforEC2Role"
   ]
 }
 
