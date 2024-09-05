@@ -1,0 +1,39 @@
+variables:
+  REPO_URI: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$SERVICE_NAME  # Your ECR repository URI
+  AWS_REGION: $AWS_DEFAULT_REGION  # AWS region where ECR and EKS are set up
+  CLUSTER_NAME: EKS-Main  # Your EKS cluster name
+  IMAGE_TAG: latest  # You can also use dynamic tags like $(date +'%Y%m%d-%H%M%S') for versioning
+  SERVICE_NAME: my-java-app  # Replace with your actual service name
+
+stages:
+  - build_image
+  - deploy
+
+before_script:
+  - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+  - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
+
+build_image:
+  stage: build_image
+  image: ubuntu:latest  # Use a generic base image
+  before_script:
+    - apt-get update && apt-get install -y docker.io  # Install Docker
+    - docker --version  # Verify Docker installation
+  script:
+    - mvn clean package  # Build the Maven project
+    - docker build -t $SERVICE_NAME .
+    - docker tag $SERVICE_NAME:latest $REPO_URI:$IMAGE_TAG
+    - docker push $REPO_URI:$IMAGE_TAG  # Push the Docker image to Amazon ECR
+  only:
+    - live  # Run this job only on the 'live' branch or other branch names as needed
+
+deploy:
+  stage: deploy
+  image: amazon/aws-cli:latest
+  before_script:
+    - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
+  script:
+    - kubectl rollout restart deployment $SERVICE_NAME -n default
+    - kubectl rollout status deployment $SERVICE_NAME -n default
+  only:
+    - test
