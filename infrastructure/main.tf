@@ -23,6 +23,12 @@ terraform {
     }
 
   }
+   backend "s3" {
+      bucket                  = "terraform-infra"
+      key                     = "eks/terraform.tfstate"
+      region                  = "ap-northeast-3"
+      shared_credentials_file = "~/.aws/credentials"
+    }
 
 }
 
