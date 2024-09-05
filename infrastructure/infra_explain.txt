@@ -1,0 +1,75 @@
+infrastructure/
+│
+├── main.tf
+└── modules/
+    ├── cluster/
+    │   ├── eks.tf
+    │   ├── output.tf
+    │   └── var.tf
+    ├── eks_addons/
+    │   ├── main.tf
+    │   └── var.tf
+    ├── eks_node_group/
+    │   ├── main.tf
+    │   └── var.tf
+    ├── ingress/
+    │   └── ingress.tf
+    ├── java-app/
+    │   └── java.tf
+    └── vpc/
+        ├── var.tf
+        └── vpc.tf
+
+
+Module Descriptions
+VPC Module (modules/vpc/)
+
+Purpose: Sets up a Virtual Private Cloud (VPC) for the EKS cluster.
+Components:
+vpc.tf: Defines the VPC, including CIDR block, DNS support, and public/private subnets.
+var.tf: Contains input variables for VPC configuration, such as VPC name, CIDR block, and subnet CIDR blocks.
+Cluster Module (modules/cluster/)
+
+Purpose: Configures the Amazon EKS cluster.
+Components:
+eks.tf: Defines the EKS cluster, including its IAM role, VPC configuration, and subnets.
+output.tf: Outputs information such as the cluster name and role ARN.
+var.tf: Contains input variables for the cluster configuration, including VPC ID and IAM role ARN.
+Note: The EKS cluster is currently hosted in public subnets. To place the EKS cluster in private subnets, the subnet configuration in the VPC module needs to be updated, and the EKS cluster should be reconfigured accordingly.
+EKS Node Group Module (modules/eks_node_group/)
+
+Purpose: Sets up the EKS node group.
+Components:
+main.tf: Defines the node group, including node role ARN, subnet IDs, instance types, and scaling configuration.
+var.tf: Contains input variables for the node group configuration, including subnet IDs and instance types.
+Ingress Module (modules/ingress/)
+
+Purpose: Installs the ingress controller using Helm.
+Components:
+ingress.tf: Defines the Helm release for the ingress controller.
+Note: This module should ensure that the ingress controller is configured to handle traffic for applications deployed in the cluster.
+Java Application Module (modules/java-app/)
+
+Purpose: Deploys a Java application in the EKS cluster.
+Components:
+java.tf: Defines the Kubernetes deployment, service, and ingress for the Java application.
+Note: Ensure that the application configuration aligns with the ingress controller's setup for proper routing.
+Key Points for Correct Configuration
+VPC Module:
+
+Ensure that public subnets are configured with map_public_ip_on_launch = true if nodes are to be in public subnets.
+If placing the EKS cluster and nodes in private subnets, ensure that NAT gateways or similar are configured for internet access.
+Cluster Module:
+
+Verify that the subnet_ids parameter in the EKS cluster definition includes the correct subnets (public or private) as required.
+Adjust the EKS cluster to use private subnets if changing from public subnets.
+EKS Node Group Module:
+
+Ensure that the subnet_ids used in the node group match the configuration in the VPC module.
+If using public subnets, ensure that security groups and network ACLs are properly configured to handle traffic.
+Ingress Module:
+
+Ensure that the Helm chart configuration aligns with the EKS cluster's network setup.
+Java Application Module:
+
+Make sure that the application's service and ingress configurations are compatible with the ingress controller's setup.

@@ -1,4 +1,12 @@
 terraform {
+  backend "s3" {
+    bucket         = "your-unique-bucket-name"
+    key            = "terraform/state"
+    region         = "ap-northeast-3"
+    dynamodb_table = "terraform-locks"
+    encrypt        = true
+  }
+
   # required_version = "~> 1.0.9"
   required_providers {
     aws = {
