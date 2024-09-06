@@ -95,3 +95,7 @@ output "eks_node_group_role_arn" {
 output "cluster_name" {
   value = module.cluster.cluster_name
 }
+
+#NOTE I have exported the aws keys 
+#export AWS_ACCESS_KEY_ID="your-access-key"
+#export AWS_SECRET_ACCESS_KEY="your-secret-key"
